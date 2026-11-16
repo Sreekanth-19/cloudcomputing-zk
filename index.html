@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Computing M2 — Zettelkasten</title>
+  <meta name="description" content="A linked-note zettelkasten for CST 423 Cloud Computing, Module 2: virtualization, hypervisors, security and case studies.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238f3b2c'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='16' font-weight='bold' fill='%23fff8ec' text-anchor='middle'%3EZK%3C/text%3E%3C/svg%3E">
+  <script>
+    (function () {
+      try {
+        var saved = window.localStorage.getItem("ccm2-zk-theme");
+        var theme = saved === "dark" || saved === "light"
+          ? saved
+          : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (error) { /* storage blocked */ }
+    })();
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open note list" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+
+      <a class="brand" href="#/note/zk-00" aria-label="Cloud Computing Module 2 home">
+        <span class="brand-mark">ZK</span>
+        <span class="brand-text">
+          <strong>Cloud Computing · M2</strong>
+          <small>Virtualization · Zettelkasten</small>
+        </span>
+      </a>
+
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input id="searchInput" type="search" placeholder="Search notes and ideas…" autocomplete="off" spellcheck="false" aria-label="Search notes">
+        <kbd class="search-kbd" aria-hidden="true">/</kbd>
+      </div>
+
+      <nav class="topnav" aria-label="Primary">
+        <a class="nav-btn" href="#/note/zk-00" data-nav="notes">Notes</a>
+        <a class="nav-btn" href="#/graph" data-nav="graph">Graph</a>
+        <button class="nav-btn nav-btn-accent" id="newNoteBtn" type="button">+ New note</button>
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle colour theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9 5.3 5.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="aboutBtn" type="button" aria-label="About this vault">?</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="app" id="app">
+    <aside class="panel panel-left" id="sidebar" aria-label="Note browser">
+      <div class="sidebar-top">
+        <div class="filters" id="categoryFilters"></div>
+        <div class="tag-filter" id="tagFilter" hidden>
+          <span>Tagged</span>
+          <span class="tag tag-active" id="tagFilterChip"></span>
+          <button type="button" class="link-btn" id="clearTagBtn">clear</button>
+        </div>
+        <div class="list-head">
+          <span id="listCount">…</span>
+          <button type="button" class="link-btn" id="clearFilters" hidden>Reset</button>
+        </div>
+      </div>
+      <div class="note-list" id="noteList"></div>
+      <div class="sidebar-foot">CST 423 · Cloud Computing<br><span>Module 2 — Virtualization</span></div>
+    </aside>
+
+    <main class="main" id="main">
+      <article class="note" id="noteView">
+        <div class="note-inner" id="noteInner"></div>
+      </article>
+
+      <section class="graph-view" id="graphView" hidden aria-label="Knowledge graph">
+        <div class="graph-toolbar">
+          <div class="graph-heading">
+            <h2>Knowledge graph</h2>
+            <p id="graphStats"></p>
+          </div>
+          <div class="graph-actions">
+            <button type="button" class="chip-btn is-active" id="graphLabelsBtn">Labels</button>
+            <button type="button" class="chip-btn" id="graphRelayoutBtn">Re-layout</button>
+            <a class="chip-btn" href="#/note/zk-00">Back to notes</a>
+          </div>
+        </div>
+        <div class="graph-canvas-wrap" id="graphWrap">
+          <canvas id="graphCanvas"></canvas>
+          <div class="graph-tooltip" id="graphTooltip" hidden></div>
+          <div class="graph-legend" id="graphLegend"></div>
+          <div class="graph-hint">Drag to move · click to open · hover to highlight neighbours</div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="panel panel-right" id="panelRight" aria-label="Note connections"></aside>
+  </div>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="modal-root" id="aboutModal" hidden>
+    <div class="modal-backdrop" data-close="about"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+      <button class="modal-x" type="button" data-close="about" aria-label="Close">&times;</button>
+      <p class="eyebrow">About this vault</p>
+      <h2 id="aboutTitle">A zettelkasten for Module 2</h2>
+      <p>The zettelkasten method breaks knowledge into small, atomic notes and connects them with links instead of folders. This site converts the <strong>Cloud Computing M2</strong> slide deck into <span id="aboutNoteCount">80</span> interlinked cards, so you can study by following ideas rather than by flipping slides.</p>
+      <ul class="about-list">
+        <li><span class="kbd">/</span> focus search &nbsp;·&nbsp; <span class="kbd">n</span> new note &nbsp;·&nbsp; <span class="kbd">Esc</span> close</li>
+        <li>Click any <span class="wikilink">underlined reference</span> to jump to that note.</li>
+        <li>Open <strong>Graph</strong> to see the whole network. Drag nodes, click to open, hover to highlight connections.</li>
+        <li>Your own notes are stored only in this browser. Export a JSON backup before clearing browser data.</li>
+      </ul>
+      <div class="about-source">
+        <strong>Source</strong> — CST 423: Cloud Computing, Module 2 (Virtualization). Note IDs, categories and slide references are preserved on each card.
+      </div>
+      <div class="about-actions">
+        <button type="button" class="chip-btn" id="exportBtn">Export personal notes</button>
+        <button type="button" class="chip-btn chip-btn-danger" id="clearPersonalBtn">Clear personal notes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-root" id="editorModal" hidden>
+    <div class="modal-backdrop" data-close="editor"></div>
+    <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+      <button class="modal-x" type="button" data-close="editor" aria-label="Close">&times;</button>
+      <p class="eyebrow" id="editorEyebrow">New personal note</p>
+      <h2 id="editorTitle">Write a note</h2>
+      <form id="editorForm" autocomplete="off">
+        <label class="field">
+          <span>Title</span>
+          <input id="editorTitleInput" type="text" maxlength="90" required placeholder="e.g. My revision checklist">
+        </label>
+        <label class="field">
+          <span>Tags <em>(comma separated)</em></span>
+          <input id="editorTagsInput" type="text" maxlength="120" placeholder="revision, security">
+        </label>
+        <label class="field">
+          <span>Body</span>
+          <textarea id="editorBodyInput" rows="9" placeholder="Write in Markdown-lite. Link other notes with [[Virtualization]] or [[zk-03]]."></textarea>
+        </label>
+        <div class="editor-hint">Supports <strong>**bold**</strong>, *italics*, lists, tables, and <strong>[[wikilinks]]</strong>. Notes are saved locally.</div>
+        <div class="editor-actions">
+          <button type="button" class="chip-btn" data-close="editor">Cancel</button>
+          <button type="submit" class="chip-btn chip-btn-primary" id="editorSaveBtn">Save note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="js/notes.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
